@@ -1,6 +1,6 @@
 from cumulus_process import Process, s3
-from os import environ, path
 from re import match, search
+import os
 
 
 class DMRPPGenerator(Process):
@@ -14,6 +14,24 @@ class DMRPPGenerator(Process):
         self.processing_regex = '.*\\.(h(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?'
         super(DMRPPGenerator, self).__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
+
+    @classmethod
+    def handler(cls, event, context=None, path=None, noclean=False):
+        """ General event handler """
+
+        #try to get path from config in event
+        if path is None:
+            try:
+                path = event.get('config', {}).get('path', None)
+            except Exception:
+                pass
+        #try to get noclean from config in event
+        if noclean is False:
+            try:
+                noclean = event.get('config', {}).get('noclean', False)
+            except Exception:
+                pass
+        return cls.run(path=path, noclean=noclean, **event)
 
 
     @property
@@ -43,7 +61,7 @@ class DMRPPGenerator(Process):
         try:
             return s3.upload(filename, info['s3'], extra={}) if info.get('s3', False) else None
         except Exception as e:
-            self.logger.error("Error uploading file %s: %s" % (path.basename(path.basename(filename)), str(e)))
+            self.logger.error("Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
     def process(self):
         """
         Override the processing wrapper
@@ -94,7 +112,7 @@ class DMRPPGenerator(Process):
             if not match(f"{self.processing_regex}$", input_file):
                 outputs += [input_file]
                 continue
-            cmd = f"get_dmrpp -b {self.path} -o {input_file}.dmrpp {path.basename(input_file)}"
+            cmd = f"get_dmrpp -b {self.path} -o {input_file}.dmrpp {os.path.basename(input_file)}"
             self.run_command(cmd)
             outputs += [input_file, f"{input_file}.dmrpp"]
         return outputs
