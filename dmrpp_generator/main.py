@@ -1,6 +1,8 @@
 from cumulus_process import Process, s3
 import os
 from re import match, search
+import copy
+from cumulus_process.s3 import download, upload
 
 
 class DMRPPGenerator(Process):
@@ -22,6 +24,7 @@ class DMRPPGenerator(Process):
         return {
             'input_files': f"{self.processing_regex}(\\.cmr\\.xml|\\.json)?$"
         }
+
 
     def get_bucket(self, filename, files, buckets):
         """
@@ -49,45 +52,90 @@ class DMRPPGenerator(Process):
         except Exception as e:
             self.logger.error("Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
 
+    
+    def upload_output_files(self):
+        """ Uploads all self.outputs """
+        
+        uploaded_files = {}
+        for granule_id, file in self.output.items():
+            uploaded_files[granule_id] = self.upload_file(file)
+        return uploaded_files
+
+
+    def update_input(self):
+        """Function to update self.input into a dictionary of granules and netcdf or hdf file"""
+
+        regex = self.input_keys.get('input_files', None)
+        if regex is None:
+            raise Exception('No files matching %s' % regex)
+
+        input_files = {}
+        self.original_input = copy.deepcopy(self.input)
+        for granule in self.input.get('granules'):
+            granule_id = granule.get('granuleId')
+            for file in granule.get('files'):
+                file_name = file.get('filename')
+                m = match(regex, file_name)
+                if m is not None:
+                    input_files[granule_id] = file_name
+
+        self.input = input_files
+
+
+    def fetch(self, key, remote=False):
+        """ Get local (default) or remote input filename """
+
+        outfiles = {}
+        for granule_id, file in self.input.items():
+            if remote or os.path.exists(file):
+                outfiles[granule_id] = file
+            else:
+                fname = download(file, path=self.path)
+                outfiles[granule_id] = fname
+                self.downloads.append(fname)
+        return outfiles
+
+
     def process(self):
         """
         Override the processing wrapper
         :return:
         """
+
+        self.update_input()
         input_files = self.fetch('input_files')
         self.output = self.dmrpp_generate(input_files)
         uploaded_files = self.upload_output_files()
         collection = self.config.get('collection')
         buckets = self.config.get('buckets')
+
         files_sizes = {}
-        for output_file_path in self.output:
+        for granule_id, output_file_path in self.output.items():
             files_sizes[os.path.basename(output_file_path)] = os.path.getsize(output_file_path)
-            # Cleanup the space
             os.remove(output_file_path)
 
         granule_data = {}
-        for uploaded_file in uploaded_files:
+        for granule_id, uploaded_file in uploaded_files.items():
             if uploaded_file is None or not uploaded_file.startswith('s3'):
                 continue
             filename = uploaded_file.split('/')[-1]
-            potential_extensions = f"({self.processing_regex})(\\.cmr.xml|\\.json.xml|\\.dmrpp)?"
-            granule_id = match(potential_extensions, filename).group(1) if match(potential_extensions, filename) else filename
-            if granule_id not in granule_data.keys():
-                granule_data[granule_id] = {'granuleId': granule_id, 'files': []}
-            granule_data[granule_id]['files'].append(
-                {
-                    "path": self.config.get('fileStagingDir'),
-                    "url_path": self.config.get('fileStagingDir'),
-                    "bucket": self.get_bucket(filename, collection.get('files', []),
-                                              buckets)['name'],
-                    "filename": uploaded_file,
-                    "name": filename,
-                    "size": files_sizes.get(filename, 0)
-                }
-            )
+            new_file = {
+                "bucket": self.get_bucket(filename, collection.get('files', []),buckets)['name'],
+                "filename": uploaded_file,
+                "name": filename,
+                "size": files_sizes.get(filename, 0),
+                "filepath": "{}/{}".format(self.config.get('fileStagingDir',""), filename)
+            }
+            granule_data[granule_id] = new_file
 
-        final_output = list(granule_data.values())
-        return {"granules": final_output, "input": uploaded_files}
+        for idx, val in enumerate(self.original_input.get('granules')):
+            granule_id = val.get('granuleId')
+            dmrpp_data = granule_data.get(granule_id)
+            if dmrpp_data:
+                self.original_input['granules'][idx]['files'].append(dmrpp_data)
+            
+        return self.original_input
+
 
     def get_data_access(self, key, bucket_destination):
         """
@@ -96,21 +144,21 @@ class DMRPPGenerator(Process):
         return: access URL
         """
         key = key.split('/')[-1]
-        half_url = ("%s/%s/%s" % (bucket_destination, self.config['fileStagingDir'], key)).replace('//',
-                                                                                                   '/')
+        half_url = ("%s/%s/%s" % (bucket_destination, self.config['fileStagingDir'], key)).replace('//','/')
         return "%s/%s"% (self.config.get('distribution_endpoint').rstrip('/'), half_url)
+
 
     def dmrpp_generate(self, input_files):
         """
         """
-        outputs = []
-        for input_file in input_files:
+        outputs = {}
+        for granule_id, input_file in input_files.items():
             if not match(f"{self.processing_regex}$", input_file):
                 outputs += [input_file]
                 continue
             cmd = f"get_dmrpp -b {self.path} -o {input_file}.dmrpp {os.path.basename(input_file)}"
             self.run_command(cmd)
-            outputs += [input_file, f"{input_file}.dmrpp"]
+            outputs[granule_id] = f"{input_file}.dmrpp"
         return outputs
 
 
