@@ -6,6 +6,9 @@ from re import search
 from cumulus_logger import CumulusLogger
 import subprocess
 from .version import __version__
+
+LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
+
 class DMRPPGenerator(Process):
     """
     Class to generate dmrpp files from hdf and netCDf files
@@ -25,8 +28,7 @@ class DMRPPGenerator(Process):
         # Enable logging the default is True
         enable_logging = os.getenv('ENABLE_CW_LOGGING', True) in [True, "true", "t", 1]
         self.dmrpp_version = f"DMRPP {__version__}"
-        if enable_logging:
-            self.logger = CumulusLogger(name="DMRPP-Generator")
+        self.LOGGER_TO_CW = LOGGER_TO_CW if enable_logging else logging
 
     @property
     def input_keys(self):
@@ -70,7 +72,7 @@ class DMRPPGenerator(Process):
         try:
             return s3.upload(filename, uri, extra={})
         except Exception as e:
-            self.logger.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
+            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
 
 
     def process(self):
@@ -89,9 +91,9 @@ class DMRPPGenerator(Process):
             dmrpp_files = []
             for file_ in granule['files']:
                 if not search(f"{self.processing_regex}$", file_['filename']):
-                    self.logger.debug(f"{self.dmrpp_version}: regex {self.processing_regex} does not match filename {file_['filename']}")
+                    self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} does not match filename {file_['filename']}")
                     continue
-                self.logger.debug(f"{self.dmrpp_version}: reges {self.processing_regex} matches filename to process {file_['filename']}")
+                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: reges {self.processing_regex} matches filename to process {file_['filename']}")
                 output_file_paths = self.dmrpp_generate(input_file=file_['filename'],
                                                        dmrpp_meta=dmrpp_meta)
                 for output_file_path in output_file_paths:
@@ -151,7 +153,7 @@ class DMRPPGenerator(Process):
         # Force dmrpp_meta to be an object
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         # If not running locally use Cumulus logger
-        logger = logging if local else self.logger
+        logger = logging if local else LOGGER_TO_CW
         cmd_output = ""
         try:
             file_name = input_file if local else s3.download(input_file, path=self.path)
