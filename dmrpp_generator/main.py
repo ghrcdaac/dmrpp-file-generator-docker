@@ -17,11 +17,14 @@ class DMRPPGenerator(Process):
     """
 
     def __init__(self, **kwargs):
-        self.processing_regex =  kwargs.get('config', {}) \
-                                    .get('collection', {}) \
-                                    .get('meta', {}) \
-                                    .get('dmrpp_processing_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?')
+        config = kwargs['config']
 
+        # any keys on collection config override keys from workflow config
+        self.dmrpp_meta = {
+            **config.get('dmrpp', {}),  # from workflow
+            **config.get('collection', {}).get('meta', {}).get('dmrpp', {}),  # from collection
+        }
+        self.processing_regex = self.dmrpp_meta.get('dmrpp_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?')
 
         super(DMRPPGenerator, self).__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
@@ -82,20 +85,16 @@ class DMRPPGenerator(Process):
         """
         collection = self.config.get('collection')
         collection_files = collection.get('files', [])
-        collection_meta = collection.get('meta', {})
-        dmrpp_meta = collection_meta.get('dmrpp', self.config.get('dmrpp', {}))
         buckets = self.config.get('buckets')
         granules = self.input['granules']
-        self.processing_regex = dmrpp_meta.get('dmrpp_regex', self.processing_regex)
         for granule in granules:
             dmrpp_files = []
             for file_ in granule['files']:
                 if not search(f"{self.processing_regex}$", file_['filename']):
                     self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} does not match filename {file_['filename']}")
                     continue
-                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: reges {self.processing_regex} matches filename to process {file_['filename']}")
-                output_file_paths = self.dmrpp_generate(input_file=file_['filename'],
-                                                       dmrpp_meta=dmrpp_meta)
+                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} matches filename to process {file_['filename']}")
+                output_file_paths = self.dmrpp_generate(input_file=file_['filename'], dmrpp_meta=self.dmrpp_meta)
                 for output_file_path in output_file_paths:
                     output_file_basename = os.path.basename(output_file_path)
                     url_path = file_.get('url_path', self.config.get('fileStagingDir'))
