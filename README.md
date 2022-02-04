@@ -84,11 +84,11 @@ As with other variables in the JSON template file, the `dmrpp` config can be set
 ```
 
 If `dmrpp` configuration is set on the collection and in the workflow, any keys
-the collection's configuration will override those keys in the workflow's. This
-means, for example, if you want all collections processed with a given workflow
-to use the same `options` but different `dmrpp_regex`, the workflow config can
-set `options` and each collection can set `dmrpp_regex` to get the desired
-behavior.
+in the collection's configuration will override those keys in the
+workflow's. This means, for example, if you want all collections processed with
+a given workflow to use the same `options` but different `dmrpp_regex`, the
+workflow config can set `options` and each collection can set `dmrpp_regex` to
+get the desired behavior.
 
 # Supported get_dmrpp configuration
 ## Via env vars
