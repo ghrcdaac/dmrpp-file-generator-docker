@@ -24,36 +24,26 @@ class TestDMRPPFileGeneration(TestCase):
                 "files": [
                   {
                     "bucket": "fake-cumulus-protected",
-                    "path": "fakepath/2020/001",
-                    "filename": f"{fixture_path}/{granule_name}",
-                    "size": 18232098,
-                    "name": granule_name,
-                    "checksumType": "md5",
                     "checksum": "aa5204f125ae83847b3b80fa2e571b00",
+                    "checksumType": "md5",
+                    "fileName": granule_name,
+                    "key": f"fakepath/2020/001/{granule_name}",
+                    "size": 18232098,
                     "type": "data",
-                    "url_path": "",
-                    "filepath": granule_name,
-                    "duplicate_found": True
                   },
                   {
                     "bucket": "fake-cumulus-public",
-                    "path": "fakepath/2020/001",
-                    "filename": f"s3://fake-cumulus-public/{granule_name}.md5",
+                    "fileName": f"{granule_name}.md5",
+                    "key": "fakepath/2020/001/{granule_name}.md5",
                     "size": 98,
-                    "name": f"{granule_name}.md5",
                     "type": "metadata",
-                    "url_path": "",
-                    "filepath": f"{granule_name}.md5",
-                    "duplicate_found": True
                   },
                   {
                     "bucket": "fake-cumulus-public",
-                    "filename": f"s3://fake-cumulus-public/{granule_name}.cmr.json",
-                    "fileSize": 1381,
-                    "name": f"{granule_name}.cmr.json",
+                    "fileName": f"{granule_name}.cmr.json",
+                    "key": f"{granule_name}.cmr.json",
+                    "size": 1381,
                     "type": "metadata",
-                    "url_path": "",
-                    "filepath": f"{granule_name}.cmr.json"
                   }
                 ],
                 "version": "2019.0"
@@ -98,7 +88,7 @@ class TestDMRPPFileGeneration(TestCase):
         dmrpp_exists = False
         for granules in StorageValues.processing_output.get('granules'):
             for file in granules.get('files'):
-                if file["name"] == dmrpp_file:
+                if file["fileName"] == dmrpp_file:
                     dmrpp_exists = True
         self.assertEqual(True, dmrpp_exists)
 
