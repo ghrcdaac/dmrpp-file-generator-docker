@@ -95,7 +95,7 @@ class DMRPPGenerator(Process):
                     continue
                 self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} matches filename to process {file_['fileName']}")
                 input_file_path = file_.get('filename', f's3://{file_["bucket"]}/{file_["key"]}')
-                output_file_paths = self.dmrpp_generate(input_file=input_file_path, dmrpp_meta=self.dmrpp_meta)
+                output_file_paths = self.dmrpp_generate(input_file=input_file_path, dmrpp_meta=dmrpp_meta)
                 for output_file_path in output_file_paths:
                     if output_file_path:
                         output_file_basename = os.path.basename(output_file_path)
