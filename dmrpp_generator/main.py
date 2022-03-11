@@ -90,28 +90,26 @@ class DMRPPGenerator(Process):
         for granule in granules:
             dmrpp_files = []
             for file_ in granule['files']:
-                if not search(f"{self.processing_regex}$", file_['filename']):
-                    self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} does not match filename {file_['filename']}")
+                if not search(f"{self.processing_regex}$", file_['fileName']):
+                    self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} does not match filename {file_['fileName']}")
                     continue
-                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} matches filename to process {file_['filename']}")
-                output_file_paths = self.dmrpp_generate(input_file=file_['filename'], dmrpp_meta=self.dmrpp_meta)
+                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} matches filename to process {file_['fileName']}")
+                input_file_path = file_.get('filename', f's3://{file_["bucket"]}/{file_["key"]}')
+                output_file_paths = self.dmrpp_generate(input_file=input_file_path, dmrpp_meta=self.dmrpp_meta)
+
                 for output_file_path in output_file_paths:
-                    output_file_basename = os.path.basename(output_file_path)
-                    url_path = file_.get('url_path', self.config.get('fileStagingDir'))
-                    filepath = os.path.dirname(file_.get('filepath', url_path))
                     if output_file_path:
+                        output_file_basename = os.path.basename(output_file_path)
                         dmrpp_file = {
-                        "name": os.path.basename(output_file_path),
-                        "path": self.config.get('fileStagingDir'),
-                        "url_path": url_path,
-                        "bucket": self.get_bucket(output_file_basename, collection_files, buckets)['name'],
-                        "size": os.path.getsize(output_file_path),
-                        "type": self.get_file_type(output_file_basename, collection_files)
+                            "bucket": self.get_bucket(output_file_basename, collection_files, buckets)['name'],
+                            "fileName": output_file_basename,
+                            "key": os.path.join(os.path.dirname(file_.get('key')), output_file_basename),
+                            "size": os.path.getsize(output_file_path),
+                            "type": self.get_file_type(output_file_basename, collection_files),
                         }
-                        dmrpp_file['filepath'] = f"{filepath}/{dmrpp_file['name']}".lstrip('/')
-                        dmrpp_file['filename'] = f's3://{dmrpp_file["bucket"]}/{dmrpp_file["filepath"]}'
                         dmrpp_files.append(dmrpp_file)
-                        self.upload_file_to_s3(output_file_path, dmrpp_file['filename'])
+                        self.upload_file_to_s3(output_file_path, f's3://{dmrpp_file["bucket"]}/{dmrpp_file["key"]}')
+
             granule['files'] += dmrpp_files
 
         return self.input
