@@ -17,7 +17,7 @@ class DMRPPGenerator(Process):
     """
 
     def __init__(self, **kwargs):
-        config = kwargs['config']
+        config = kwargs.get('config', {})
 
         # any keys on collection config override keys from workflow config
         self.dmrpp_meta = {
