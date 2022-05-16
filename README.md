@@ -1,5 +1,6 @@
 ![Code Quality Workflow](https://github.com/ghrcdaac/dmrpp-file-generator-docker/actions/workflows/code-quality.yml/badge.svg?branch=master)
-
+![Code Quality](https://api.codiga.io/project/33592/score/svg)
+![Code Grade](https://api.codiga.io/project/33592/status/svg)
 ```
 
 # dmrpp-file-generator-docker
