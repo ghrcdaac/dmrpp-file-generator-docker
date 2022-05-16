@@ -11,6 +11,7 @@ jobs:
       uses: codiga/github-action@master
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
+        codiga_api_token: ${{ secrets.CODIGA_API_TOKEN }}
         min_quality_grade: 'WARNING'
         min_quality_score: '50'
         max_defects_rate: '0.2'
