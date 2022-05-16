@@ -1,3 +1,7 @@
+![Code Quality Workflow](https://github.com/ghrcdaac/dmrpp-file-generator-docker/actions/workflows/code-quality.yml/badge.svg?branch=master)
+
+```
+
 # dmrpp-file-generator-docker
 Docker image to generate dmrpp files from netCDF and HDF files
 # Supported get_dmrpp configuration
