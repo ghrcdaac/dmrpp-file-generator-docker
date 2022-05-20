@@ -1,12 +1,14 @@
 import logging
 import os
 import re
+from tempfile import mkdtemp
+
 import boto3
 import requests
 
 
 class DMRppOptions:
-    def __init__(self, host_path='/tmp') -> None:
+    def __init__(self, host_path=mkdtemp()) -> None:
         self.s3_client = boto3.client('s3')
         self.session = requests.Session()
         self.host_path = host_path.rstrip("/")
@@ -18,7 +20,7 @@ class DMRppOptions:
         """
         filename = os.path.basename(link)
         local_path = f'{self.host_path}/{filename}'
-        protocol = re.match(rf'.+?(?=:)', link).group()
+        protocol = re.match(r'.+?(?=:)', link).group()
         switcher = {'http': self.__get_http_file, 'https': self.__get_http_file,
                     's3': self.__get_s3_file}
         if not os.path.isfile(local_path):
@@ -30,6 +32,9 @@ class DMRppOptions:
         """
 
         """
+        _ = link  # placeholder for later implementation
+        _ = local_path  # placeholder for later implementation
+
         message = f"The protocol {protocol} is not implemented yet"
         logging.error(message)
         raise Exception(message)
