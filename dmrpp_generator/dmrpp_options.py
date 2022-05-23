@@ -28,14 +28,11 @@ class DMRppOptions:
         return local_path
 
     @staticmethod
-    def __switcher_default(link, local_path, protocol):
+    def __switcher_default(protocol, **kwargs):
         """
 
         """
-        _ = link  # placeholder for later implementation
-        _ = local_path  # placeholder for later implementation
-
-        message = f"The protocol {protocol} is not implemented yet"
+        message = f"The protocol {protocol} is not implemented yet. Error callinf function with {kwargs}"
         logging.error(message)
         raise Exception(message)
 
@@ -49,9 +46,10 @@ class DMRppOptions:
             response = self.session.get(link)
             with open(local_path, 'wb') as file:
                 file.write(response.content)
-        except Exception as e:
-            logging.error(msg=str(e))
-            raise e
+        except Exception as err:
+            msg = f"{err}. Error calling the function with {kwargs}"
+            logging.error(msg=msg)
+            raise err
         pass
 
     def __get_s3_file(self, link, local_path, **kwargs):
@@ -60,14 +58,15 @@ class DMRppOptions:
         :param s3_link: s3 link of the file to download.
         :param local_path: Location to write the downloaded file to.
         """
-        reg_res = re.match(rf'^.*://([^/]*)/(.*)', link)
+        reg_res = re.match(r'^.*://([^/]*)/(.*)', link)
         bucket_name = reg_res.group(1)
         key = reg_res.group(2)
         try:
             self.s3_client.download_file(bucket_name, key, local_path)
-        except Exception as e:
-            logging.error(msg=str(e))
-            raise e
+        except Exception as err:
+            msg = f"{err}. Error calling the function with {kwargs}"
+            logging.error(msg=msg)
+            raise err
         pass
 
     def get_dmrpp_option(self, dmrpp_meta):
