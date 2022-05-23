@@ -153,6 +153,7 @@ class DMRPPGenerator(Process):
     def run_command(cmd):
         """ Run cmd as a system command """
         out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):

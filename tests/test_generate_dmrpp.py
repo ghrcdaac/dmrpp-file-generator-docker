@@ -84,12 +84,14 @@ class TestDMRPPFileGeneration(TestCase):
         Test the putput schema of the processnig
         :return:
         """
+
         self.assertListEqual(['granules'], list(StorageValues.processing_output.keys()))
 
     def test_3_checkout_dmrpp_output(self):
 
         dmrpp_file = f"{self.granule_name}.dmrpp"
         dmrpp_exists = False
+
         for granules in StorageValues.processing_output.get('granules'):
             for file in granules.get('files'):
                 if file["fileName"] == dmrpp_file:
