@@ -1,10 +1,10 @@
-from cumulus_process import Process, s3
 import logging
-from .dmrpp_options import DMRppOptions
 import os
 from re import search
 from cumulus_logger import CumulusLogger
 import subprocess
+from cumulus_process import Process, s3
+from .dmrpp_options import DMRppOptions
 from .version import __version__
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
@@ -26,7 +26,7 @@ class DMRPPGenerator(Process):
         }
         self.processing_regex = self.dmrpp_meta.get('dmrpp_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?')
 
-        super(DMRPPGenerator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
         # Enable logging the default is True
         enable_logging = os.getenv('ENABLE_CW_LOGGING', True) in [True, "true", "t", 1]
@@ -74,8 +74,10 @@ class DMRPPGenerator(Process):
         """ Upload a local file to s3 if collection payload provided """
         try:
             return s3.upload(filename, uri, extra={})
-        except Exception as e:
-            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
+        except Exception as err:
+            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(err)))
+
+        return None
 
 
     def process(self):
@@ -127,6 +129,7 @@ class DMRPPGenerator(Process):
 
     def add_missing_files(self, dmrpp_meta, file_name):
         """
+
         """
         # If the missing file was not generated
         if not os.path.isfile(file_name):
@@ -140,7 +143,7 @@ class DMRPPGenerator(Process):
     @staticmethod
     def run_command(cmd):
         """ Run cmd as a system command """
-        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):
@@ -160,8 +163,8 @@ class DMRPPGenerator(Process):
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
-        except Exception as ex:
-            logger.error(f"{self.dmrpp_version}: error {ex}: {cmd_output.stdout} {cmd_output.stderr}")
+        except Exception as err:
+            logger.error(f"{self.dmrpp_version}: error {err}: {cmd_output.stdout} {cmd_output.stderr}")
             return []
 
 
