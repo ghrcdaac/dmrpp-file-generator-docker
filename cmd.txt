@@ -1,1 +1,0 @@
-get_dmrpp -M -b /home/davisg-dev/github/dmrpp-file-generator-docker/tests/fixtures -o /home/davisg-dev/github/dmrpp-file-generator-docker/tests/fixtures/tpw_v07r01_201910.nc.dmrpp tpw_v07r01_201910.nc
