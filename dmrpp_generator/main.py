@@ -9,6 +9,15 @@ from .version import __version__
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
 
+
+class CmdStd:
+    """
+    Class for command stdout and stdin
+    """
+    stdout = ""
+    stderr = ""
+
+
 class DMRPPGenerator(Process):
     """
     Class to generate dmrpp files from hdf and netCDf files
@@ -154,7 +163,7 @@ class DMRPPGenerator(Process):
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         # If not running locally use Cumulus logger
         logger = logging if local else LOGGER_TO_CW
-        cmd_output = ""
+        cmd_output = CmdStd()
         try:
             file_name = input_file if local else s3.download(input_file, path=self.path)
             cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
