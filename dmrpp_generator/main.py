@@ -2,10 +2,10 @@ import logging
 import os
 from re import search
 from botocore.exceptions import ClientError
+from cumulus_process import Process, s3
 from .version import __version__
 from cumulus_logger import CumulusLogger
 import subprocess
-from cumulus_process import Process, s3
 from .dmrpp_options import DMRppOptions
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
