@@ -74,6 +74,8 @@ class TestDMRPPFileGeneration(TestCase):
         Testing get correct start date
         :return:
         """
+        _ = mock_upload, mock_fetch, mock_remove, mock_download
+
         StorageValues.processing_output = self.process_instance.process()
         expected_file_path = f"{self.process_instance.path}/{self.granule_name}.dmrpp"
         self.assertEqual(os.path.exists(expected_file_path), 1)
