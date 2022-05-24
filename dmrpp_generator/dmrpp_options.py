@@ -2,7 +2,6 @@ import logging
 import os
 import re
 from tempfile import mkdtemp
-
 import boto3
 import requests
 
