@@ -12,7 +12,7 @@ LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
 
 class CmdStd:
     """
-
+    class to satisfy stdout and stderr
     """
     stdout = ""
     stderr = ""
