@@ -60,7 +60,7 @@ class TestDMRPPFileGeneration(TestCase):
     process_instance = DMRPPGenerator(input=input_file, config=payload_data['config'], path=fixture_path)
     process_instance.path = fixture_path
 
-    @patch('dmrpp_generator.main.DMRPPGenerator.upload_file',
+    @patch('dmrpp_generator.main.DMRPPGenerator.upload_file_to_s3',
        return_value={granule_id:f's3://{granule_name}.dmrpp'})
     @patch('cumulus_process.Process.fetch_all',
        return_value={'input_key': [os.path.join(os.path.dirname(__file__), f"fixtures/{granule_name}")]})
