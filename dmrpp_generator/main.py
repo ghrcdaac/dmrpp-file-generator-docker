@@ -175,6 +175,8 @@ class DMRPPGenerator(Process):
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
+        except subprocess.CalledProcessError as sub_e:
+            logger.error(f"error {sub_e}")
         except Exception as ex:
             logger.error(f"{self.dmrpp_version}: error {ex}: {cmd_output.stdout} {cmd_output.stderr}")
             return []
