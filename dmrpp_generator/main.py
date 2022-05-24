@@ -6,6 +6,7 @@ import subprocess
 from .version import __version__
 from cumulus_process import Process, s3
 from .dmrpp_options import DMRppOptions
+from botocore.exceptions import ClientError
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
 
@@ -82,6 +83,8 @@ class DMRPPGenerator(Process):
         """ Upload a local file to s3 if collection payload provided """
         try:
             return s3.upload(filename, uri, extra={})
+        except ClientError as cle:
+            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: {cle}")
         except Exception as err:
             self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: "
                                     f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
