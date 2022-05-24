@@ -1,11 +1,11 @@
-from cumulus_process import Process, s3
 import logging
-from .dmrpp_options import DMRppOptions
 import os
 from re import search
 from cumulus_logger import CumulusLogger
 import subprocess
 from .version import __version__
+from cumulus_process import Process, s3
+from .dmrpp_options import DMRppOptions
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
 
