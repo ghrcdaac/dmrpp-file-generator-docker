@@ -1,10 +1,9 @@
 from os import listdir, getenv
 from os.path import isfile, join, basename
+import json
 from re import match
 import logging
-import json
 from dmrpp_generator.main import DMRPPGenerator
-
 logging.getLogger()
 
 if __name__ == "__main__":

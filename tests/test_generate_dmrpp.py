@@ -106,7 +106,6 @@ class TestDMRPPFileGeneration(TestCase):
     # @patch('cumulus_process.s3.upload', return_value=f"s3://fake_s3/{granule_name}")
     # def test_4_checkout_missing_nc(self, mock_upload, mock_fetch, mock_remove, mock_download, mock_upload_s3):
     #     self.payload_data['config']['collection']['meta']['dmrpp']['options'] = [{"flag": "-M"}]
-    
     #     process_instance = DMRPPGenerator(input=self.input_file, config=self.payload_data['config'], path=self.fixture_path)
     #     process_instance.path = self.fixture_path
     #     outputs = process_instance.process()
