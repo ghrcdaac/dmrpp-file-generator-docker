@@ -40,7 +40,7 @@ class DMRPPGenerator(Process):
         # Enable logging the default is True
         enable_logging = os.getenv('ENABLE_CW_LOGGING', 'True') in [True, "true", "t", 1]
         self.dmrpp_version = f"DMRPP {__version__}"
-        self.LOGGER_TO_CW = LOGGER_TO_CW if enable_logging else logging
+        self.logger_to_cw = LOGGER_TO_CW if enable_logging else logging
 
     @property
     def input_keys(self):
@@ -84,9 +84,9 @@ class DMRPPGenerator(Process):
         try:
             return s3.upload(filename, uri, extra={})
         except ClientError as cle:
-            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: {cle}")
+            self.logger_to_cw.error(f"{self.dmrpp_version}: {cle}")
         except Exception as err:  # pylint: disable=broad-except
-            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: "
+            self.logger_to_cw.error(f"{self.dmrpp_version}: "
                                     f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
 
         return None
@@ -105,10 +105,10 @@ class DMRPPGenerator(Process):
             dmrpp_files = []
             for file_ in granule['files']:
                 if not search(f"{self.processing_regex}$", file_['fileName']):
-                    self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
+                    self.logger_to_cw.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
                                             f" does not match filename {file_['fileName']}")
                     continue
-                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
+                self.logger_to_cw.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
                                         f" matches filename to process {file_['fileName']}")
                 input_file_path = file_.get('filename', f's3://{file_["bucket"]}/{file_["key"]}')
                 output_file_paths = self.dmrpp_generate(input_file=input_file_path, dmrpp_meta=self.dmrpp_meta)
