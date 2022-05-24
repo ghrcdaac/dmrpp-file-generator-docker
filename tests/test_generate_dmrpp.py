@@ -1,10 +1,13 @@
 import os
 from unittest import TestCase
+from unittest.mock import patch
 import json
 from dmrpp_generator.main import DMRPPGenerator
-from unittest.mock import patch
 
 class StorageValues:
+    """
+
+    """
     processing_output = None
 
 
@@ -71,6 +74,7 @@ class TestDMRPPFileGeneration(TestCase):
         Testing get correct start date
         :return:
         """
+
         StorageValues.processing_output = self.process_instance.process()
         expected_file_path = f"{self.process_instance.path}/{self.granule_name}.dmrpp"
         self.assertEqual(os.path.exists(expected_file_path), 1)
@@ -80,12 +84,14 @@ class TestDMRPPFileGeneration(TestCase):
         Test the putput schema of the processnig
         :return:
         """
+
         self.assertListEqual(['granules'], list(StorageValues.processing_output.keys()))
 
     def test_3_checkout_dmrpp_output(self):
 
         dmrpp_file = f"{self.granule_name}.dmrpp"
         dmrpp_exists = False
+
         for granules in StorageValues.processing_output.get('granules'):
             for file in granules.get('files'):
                 if file["fileName"] == dmrpp_file:
@@ -101,7 +107,7 @@ class TestDMRPPFileGeneration(TestCase):
     # @patch('cumulus_process.s3.upload', return_value=f"s3://fake_s3/{granule_name}")
     # def test_4_checkout_missing_nc(self, mock_upload, mock_fetch, mock_remove, mock_download, mock_upload_s3):
     #     self.payload_data['config']['collection']['meta']['dmrpp']['options'] = [{"flag": "-M"}]
-    
+
     #     process_instance = DMRPPGenerator(input=self.input_file, config=self.payload_data['config'], path=self.fixture_path)
     #     process_instance.path = self.fixture_path
     #     outputs = process_instance.process()

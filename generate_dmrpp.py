@@ -1,10 +1,12 @@
 from os import listdir, getenv
 from os.path import isfile, join, basename
-from dmrpp_generator.main import DMRPPGenerator
 from re import match
 import logging
 import json
+from dmrpp_generator.main import DMRPPGenerator
+
 logging.getLogger()
+
 if __name__ == "__main__":
     payload = getenv('PAYLOAD', '{}')
     meta = json.loads(payload)
@@ -14,5 +16,4 @@ if __name__ == "__main__":
     dmrpp = DMRPPGenerator(input=input_files)
     dmrpp.path = workstation_path
     dmrpp.processing_regex = meta.get('dmrpp_regex', dmrpp.processing_regex)
-    [dmrpp.dmrpp_generate(input_file, local=True, dmrpp_meta=meta) for input_file in input_files if match(f"{dmrpp.processing_regex}$",
-                                                                                         basename(input_file))]
+    [dmrpp.dmrpp_generate(input_file, local=True, dmrpp_meta=meta) for input_file in input_files if match(f"{dmrpp.processing_regex}$",basename(input_file))]

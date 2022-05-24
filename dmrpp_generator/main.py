@@ -1,13 +1,22 @@
-from cumulus_process import Process, s3
 import logging
-from .dmrpp_options import DMRppOptions
 import os
 from re import search
 from cumulus_logger import CumulusLogger
 import subprocess
+from cumulus_process import Process, s3
+from .dmrpp_options import DMRppOptions
 from .version import __version__
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
+
+
+class CmdStd:
+    """
+    Class for command stdout and stdin
+    """
+    stdout = ""
+    stderr = ""
+
 
 class DMRPPGenerator(Process):
     """
@@ -78,6 +87,7 @@ class DMRPPGenerator(Process):
             self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
 
 
+
     def process(self):
         """
         Override the processing wrapper
@@ -127,6 +137,7 @@ class DMRPPGenerator(Process):
 
     def add_missing_files(self, dmrpp_meta, file_name):
         """
+
         """
         # If the missing file was not generated
         if not os.path.isfile(file_name):
