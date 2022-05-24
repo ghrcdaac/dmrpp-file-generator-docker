@@ -1,12 +1,16 @@
 import logging
 import os
 import re
+from tempfile import mkdtemp
 import boto3
 import requests
 
 
 class DMRppOptions:
-    def __init__(self, host_path='/tmp') -> None:
+    """
+
+    """
+    def __init__(self, host_path=mkdtemp()) -> None:
         self.s3_client = boto3.client('s3')
         self.session = requests.Session()
         self.host_path = host_path.rstrip("/")
@@ -18,7 +22,7 @@ class DMRppOptions:
         """
         filename = os.path.basename(link)
         local_path = f'{self.host_path}/{filename}'
-        protocol = re.match(rf'.+?(?=:)', link).group()
+        protocol = re.match(r'.+?(?=:)', link).group()
         switcher = {'http': self.__get_http_file, 'https': self.__get_http_file,
                     's3': self.__get_s3_file}
         if not os.path.isfile(local_path):
@@ -44,9 +48,9 @@ class DMRppOptions:
             response = self.session.get(link)
             with open(local_path, 'wb') as file:
                 file.write(response.content)
-        except Exception as e:
-            logging.error(msg=str(e))
-            raise e
+        except Exception as err:
+            logging.error(msg=str(err))
+            raise err
         pass
 
     def __get_s3_file(self, link, local_path, **kwargs):
@@ -55,14 +59,14 @@ class DMRppOptions:
         :param s3_link: s3 link of the file to download.
         :param local_path: Location to write the downloaded file to.
         """
-        reg_res = re.match(rf'^.*://([^/]*)/(.*)', link)
+        reg_res = re.match(r'^.*://([^/]*)/(.*)', link)
         bucket_name = reg_res.group(1)
         key = reg_res.group(2)
         try:
             self.s3_client.download_file(bucket_name, key, local_path)
-        except Exception as e:
-            logging.error(msg=str(e))
-            raise e
+        except Exception as err:
+            logging.error(msg=str(err))
+            raise err
         pass
 
     def get_dmrpp_option(self, dmrpp_meta):

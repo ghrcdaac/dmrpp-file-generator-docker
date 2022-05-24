@@ -1,13 +1,22 @@
-from cumulus_process import Process, s3
 import logging
-from .dmrpp_options import DMRppOptions
 import os
 from re import search
+from botocore.exceptions import ClientError
+from cumulus_process import Process, s3
+from .version import __version__
 from cumulus_logger import CumulusLogger
 import subprocess
-from .version import __version__
+from .dmrpp_options import DMRppOptions
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
+
+
+class CmdStd:
+    """
+    class to satisfy stdout and stderr
+    """
+    stdout = ""
+    stderr = ""
 
 class DMRPPGenerator(Process):
     """
@@ -26,7 +35,7 @@ class DMRPPGenerator(Process):
         }
         self.processing_regex = self.dmrpp_meta.get('dmrpp_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?')
 
-        super(DMRPPGenerator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
         # Enable logging the default is True
         enable_logging = os.getenv('ENABLE_CW_LOGGING', True) in [True, "true", "t", 1]
@@ -74,8 +83,13 @@ class DMRPPGenerator(Process):
         """ Upload a local file to s3 if collection payload provided """
         try:
             return s3.upload(filename, uri, extra={})
-        except Exception as e:
-            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
+        except ClientError as cle:
+            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: {cle}")
+        except Exception as err:  # pylint: disable=broad-except
+            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: "
+                                    f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
+
+        return None
 
 
     def process(self):
@@ -127,6 +141,7 @@ class DMRPPGenerator(Process):
 
     def add_missing_files(self, dmrpp_meta, file_name):
         """
+
         """
         # If the missing file was not generated
         if not os.path.isfile(file_name):
@@ -140,7 +155,7 @@ class DMRPPGenerator(Process):
     @staticmethod
     def run_command(cmd):
         """ Run cmd as a system command """
-        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):
@@ -151,7 +166,7 @@ class DMRPPGenerator(Process):
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         # If not running locally use Cumulus logger
         logger = logging if local else LOGGER_TO_CW
-        cmd_output = ""
+        cmd_output = CmdStd()
         try:
             file_name = input_file if local else s3.download(input_file, path=self.path)
             cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
@@ -160,6 +175,8 @@ class DMRPPGenerator(Process):
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
+        except subprocess.CalledProcessError as sub_e:
+            logger.error(f"error {sub_e}")
         except Exception as ex:
             logger.error(f"{self.dmrpp_version}: error {ex}: {cmd_output.stdout} {cmd_output.stderr}")
             return []
