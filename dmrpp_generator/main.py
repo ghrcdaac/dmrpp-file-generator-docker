@@ -128,6 +128,7 @@ class DMRPPGenerator(Process):
 
     def add_missing_files(self, dmrpp_meta, file_name):
         """
+
         """
         # If the missing file was not generated
         if not os.path.isfile(file_name):
@@ -141,7 +142,7 @@ class DMRPPGenerator(Process):
     @staticmethod
     def run_command(cmd):
         """ Run cmd as a system command """
-        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):
