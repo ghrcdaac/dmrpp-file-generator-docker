@@ -16,5 +16,4 @@ if __name__ == "__main__":
     dmrpp = DMRPPGenerator(input=input_files)
     dmrpp.path = workstation_path
     dmrpp.processing_regex = meta.get('dmrpp_regex', dmrpp.processing_regex)
-    [dmrpp.dmrpp_generate(input_file, local=True, dmrpp_meta=meta) for input_file in input_files if match(f"{dmrpp.processing_regex}$",
-                                                                                         basename(input_file))]
+    [dmrpp.dmrpp_generate(input_file, local=True, dmrpp_meta=meta) for input_file in input_files if match(f"{dmrpp.processing_regex}$",basename(input_file))]
