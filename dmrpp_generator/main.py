@@ -152,7 +152,6 @@ class DMRPPGenerator(Process):
     def run_command(cmd):
         """ Run cmd as a system command """
         out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):
@@ -163,7 +162,7 @@ class DMRPPGenerator(Process):
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         # If not running locally use Cumulus logger
         logger = logging if local else LOGGER_TO_CW
-        cmd_output = ''
+        cmd_output = ""
         try:
             file_name = input_file if local else s3.download(input_file, path=self.path)
             cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
@@ -172,8 +171,8 @@ class DMRPPGenerator(Process):
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
-        except Exception as e:
-            logger.error(f"{self.dmrpp_version}: error {e}: {cmd_output.stdout} {cmd_output.stderr}")
+        except Exception as ex:
+            logger.error(f"{self.dmrpp_version}: error {ex}: {cmd_output.stdout} {cmd_output.stderr}")
             return []
 
 
