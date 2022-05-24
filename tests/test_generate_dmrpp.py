@@ -55,8 +55,8 @@ class TestDMRPPFileGeneration(TestCase):
     }
 
     payload_file = f"{fixture_path}/payload.json"
-    with open(payload_file) as f:
-        payload = json.load(f)
+    with open(payload_file) as fle:
+        payload = json.load(fle)
 
     payload_data = payload
 
