@@ -38,7 +38,7 @@ class DMRPPGenerator(Process):
         super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
         # Enable logging the default is True
-        enable_logging = os.getenv('ENABLE_CW_LOGGING', True) in [True, "true", "t", 1]
+        enable_logging = os.getenv('ENABLE_CW_LOGGING', 'True') in [True, "true", "t", 1]
         self.dmrpp_version = f"DMRPP {__version__}"
         self.LOGGER_TO_CW = LOGGER_TO_CW if enable_logging else logging
 
