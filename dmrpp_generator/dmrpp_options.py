@@ -48,9 +48,9 @@ class DMRppOptions:
             response = self.session.get(link)
             with open(local_path, 'wb') as file:
                 file.write(response.content)
-        except Exception as e:
-            logging.error(msg=str(e))
-            raise e
+        except Exception as err:
+            logging.error(msg=str(err))
+            raise err
         pass
 
     def __get_s3_file(self, link, local_path, **kwargs):
@@ -64,9 +64,9 @@ class DMRppOptions:
         key = reg_res.group(2)
         try:
             self.s3_client.download_file(bucket_name, key, local_path)
-        except Exception as e:
-            logging.error(msg=str(e))
-            raise e
+        except Exception as err:
+            logging.error(msg=str(err))
+            raise err
         pass
 
     def get_dmrpp_option(self, dmrpp_meta):
