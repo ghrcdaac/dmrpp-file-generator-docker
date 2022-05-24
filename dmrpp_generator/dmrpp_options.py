@@ -7,7 +7,7 @@ import requests
 
 
 class DMRppOptions:
-    def __init__(self, host_path=mkdtemp()) -> None:
+    def __init__(self, host_path="/tmp") -> None:
         self.s3_client = boto3.client('s3')
         self.session = requests.Session()
         self.host_path = host_path.rstrip("/")
@@ -19,7 +19,7 @@ class DMRppOptions:
         """
         filename = os.path.basename(link)
         local_path = f'{self.host_path}/{filename}'
-        protocol = re.match(r'.+?(?=:)', link).group()
+        protocol = re.match(rf'.+?(?=:)', link).group()
         switcher = {'http': self.__get_http_file, 'https': self.__get_http_file,
                     's3': self.__get_s3_file}
         if not os.path.isfile(local_path):
@@ -27,11 +27,11 @@ class DMRppOptions:
         return local_path
 
     @staticmethod
-    def __switcher_default(protocol, **kwargs):
+    def __switcher_default(link, local_path, protocol):
         """
 
         """
-        message = f"The protocol {protocol} is not implemented yet. Error callinf function with {kwargs}"
+        message = f"The protocol {protocol} is not implemented yet."
         logging.error(message)
         raise Exception(message)
 
@@ -46,8 +46,7 @@ class DMRppOptions:
             with open(local_path, 'wb') as file:
                 file.write(response.content)
         except Exception as err:
-            msg = f"{err}. Error calling the function with {kwargs}"
-            logging.error(msg=msg)
+            logging.error(msg=str(err))
             raise err
         pass
 
@@ -57,14 +56,13 @@ class DMRppOptions:
         :param s3_link: s3 link of the file to download.
         :param local_path: Location to write the downloaded file to.
         """
-        reg_res = re.match(r'^.*://([^/]*)/(.*)', link)
+        reg_res = re.match(rf'^.*://([^/]*)/(.*)', link)
         bucket_name = reg_res.group(1)
         key = reg_res.group(2)
         try:
             self.s3_client.download_file(bucket_name, key, local_path)
         except Exception as err:
-            msg = f"{err}. Error calling the function with {kwargs}"
-            logging.error(msg=msg)
+            logging.error(msg=str(err))
             raise err
         pass
 
