@@ -26,7 +26,7 @@ class DMRPPGenerator(Process):
         }
         self.processing_regex = self.dmrpp_meta.get('dmrpp_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?')
 
-        super(DMRPPGenerator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
         # Enable logging the default is True
         enable_logging = os.getenv('ENABLE_CW_LOGGING', True) in [True, "true", "t", 1]
