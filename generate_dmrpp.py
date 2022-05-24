@@ -6,9 +6,7 @@ import json
 from dmrpp_generator.main import DMRPPGenerator
 
 logging.getLogger()
-"""
 
-"""
 if __name__ == "__main__":
     payload = getenv('PAYLOAD', '{}')
     meta = json.loads(payload)
