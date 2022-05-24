@@ -2,9 +2,9 @@ import logging
 import os
 from re import search
 from botocore.exceptions import ClientError
+from .version import __version__
 from cumulus_logger import CumulusLogger
 import subprocess
-from .version import __version__
 from cumulus_process import Process, s3
 from .dmrpp_options import DMRppOptions
 
