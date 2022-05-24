@@ -83,7 +83,9 @@ class DMRPPGenerator(Process):
         try:
             return s3.upload(filename, uri, extra={})
         except Exception as err:
-            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(err)))
+            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: "
+                                    f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
+
         return None
 
 
