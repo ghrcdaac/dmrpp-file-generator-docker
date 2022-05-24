@@ -1,12 +1,16 @@
 import logging
 import os
 import re
+from tempfile import mkdtemp
 import boto3
 import requests
 
 
 class DMRppOptions:
-    def __init__(self, host_path='/tmp') -> None:
+    """
+
+    """
+    def __init__(self, host_path=mkdtemp()) -> None:
         self.s3_client = boto3.client('s3')
         self.session = requests.Session()
         self.host_path = host_path.rstrip("/")
