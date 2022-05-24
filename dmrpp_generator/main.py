@@ -74,8 +74,9 @@ class DMRPPGenerator(Process):
         """ Upload a local file to s3 if collection payload provided """
         try:
             return s3.upload(filename, uri, extra={})
-        except Exception as e:
-            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
+        except Exception as err:
+            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(err)))
+        return None
 
 
     def process(self):
