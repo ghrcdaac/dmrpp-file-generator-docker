@@ -85,9 +85,6 @@ class DMRPPGenerator(Process):
             return s3.upload(filename, uri, extra={})
         except ClientError as cle:
             self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: {cle}")
-        except Exception as err:  # pylint: disable=broad-except
-            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: "
-                                    f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
 
         return None
 
