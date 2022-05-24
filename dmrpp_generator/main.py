@@ -83,8 +83,8 @@ class DMRPPGenerator(Process):
         """ Upload a local file to s3 if collection payload provided """
         try:
             return s3.upload(filename, uri, extra={})
-        except Exception as err:
-            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(err)))
+        except Exception as e:
+            self.LOGGER_TO_CW.error("{self.dmrpp_version}: Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(e)))
 
 
 
@@ -172,8 +172,8 @@ class DMRPPGenerator(Process):
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
-        except Exception as err:
-            logger.error(f"{self.dmrpp_version}: error {err}: {cmd_output.stdout} {cmd_output.stderr}")
+        except Exception as e:
+            logger.error(f"{self.dmrpp_version}: error {e}: {cmd_output.stdout} {cmd_output.stderr}")
             return []
 
 
