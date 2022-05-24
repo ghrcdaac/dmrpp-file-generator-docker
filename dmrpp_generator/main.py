@@ -85,7 +85,6 @@ class DMRPPGenerator(Process):
             return s3.upload(filename, uri, extra={})
         except ClientError as cle:
             self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: {cle}")
-
         return None
 
 
