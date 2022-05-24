@@ -1,11 +1,11 @@
 import logging
 import os
 from re import search
+import subprocess
 from botocore.exceptions import ClientError
 from cumulus_process import Process, s3
-from .version import __version__
 from cumulus_logger import CumulusLogger
-import subprocess
+from .version import __version__
 from .dmrpp_options import DMRppOptions
 
 LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
@@ -38,9 +38,9 @@ class DMRPPGenerator(Process):
         super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
         # Enable logging the default is True
-        enable_logging = os.getenv('ENABLE_CW_LOGGING', True) in [True, "true", "t", 1]
+        enable_logging = os.getenv('ENABLE_CW_LOGGING', 'True') in [True, "true", "t", 1]
         self.dmrpp_version = f"DMRPP {__version__}"
-        self.LOGGER_TO_CW = LOGGER_TO_CW if enable_logging else logging
+        self.logger_to_cw = LOGGER_TO_CW if enable_logging else logging
 
     @property
     def input_keys(self):
@@ -84,9 +84,9 @@ class DMRPPGenerator(Process):
         try:
             return s3.upload(filename, uri, extra={})
         except ClientError as cle:
-            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: {cle}")
+            self.logger_to_cw.error(f"{self.dmrpp_version}: {cle}")
         except Exception as err:  # pylint: disable=broad-except
-            self.LOGGER_TO_CW.error(f"{self.dmrpp_version}: "
+            self.logger_to_cw.error(f"{self.dmrpp_version}: "
                                     f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
 
         return None
@@ -105,9 +105,11 @@ class DMRPPGenerator(Process):
             dmrpp_files = []
             for file_ in granule['files']:
                 if not search(f"{self.processing_regex}$", file_['fileName']):
-                    self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} does not match filename {file_['fileName']}")
+                    self.logger_to_cw.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
+                                            f" does not match filename {file_['fileName']}")
                     continue
-                self.LOGGER_TO_CW.debug(f"{self.dmrpp_version}: regex {self.processing_regex} matches filename to process {file_['fileName']}")
+                self.logger_to_cw.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
+                                        f" matches filename to process {file_['fileName']}")
                 input_file_path = file_.get('filename', f's3://{file_["bucket"]}/{file_["key"]}')
                 output_file_paths = self.dmrpp_generate(input_file=input_file_path, dmrpp_meta=self.dmrpp_meta)
 
@@ -136,12 +138,13 @@ class DMRPPGenerator(Process):
         dmrpp_options = DMRppOptions(self.path)
         options = dmrpp_options.get_dmrpp_option(dmrpp_meta=dmrpp_meta)
         local_option = f"-u file://{output_filename}" if local else ""
-        dmrpp_cmd = f"get_dmrpp {options} {input_path} -o {output_filename}.dmrpp {local_option} {os.path.basename(output_filename)}"
+        dmrpp_cmd = f"get_dmrpp {options} {input_path} -o {output_filename}.dmrpp" \
+                    f" {local_option} {os.path.basename(output_filename)}"
         return " ".join(dmrpp_cmd.split())
 
     def add_missing_files(self, dmrpp_meta, file_name):
         """
-
+        Adds missing file
         """
         # If the missing file was not generated
         if not os.path.isfile(file_name):
@@ -177,7 +180,8 @@ class DMRPPGenerator(Process):
 
         except subprocess.CalledProcessError as sub_e:
             logger.error(f"error {sub_e}")
-        except Exception as ex:
+            return []
+        except Exception as ex:  # pylint: disable=broad-except
             logger.error(f"{self.dmrpp_version}: error {ex}: {cmd_output.stdout} {cmd_output.stderr}")
             return []
 

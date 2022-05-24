@@ -8,7 +8,7 @@ import requests
 
 class DMRppOptions:
     """
-
+    DMRpp Options
     """
     def __init__(self, host_path=mkdtemp()) -> None:
         self.s3_client = boto3.client('s3')
@@ -30,11 +30,11 @@ class DMRppOptions:
         return local_path
 
     @staticmethod
-    def __switcher_default(link, local_path, protocol):
+    def __switcher_default(protocol, **kwargs):
         """
 
         """
-        message = f"The protocol {protocol} is not implemented yet"
+        message = f"The protocol {protocol} is not implemented yet: called using {kwargs}"
         logging.error(message)
         raise Exception(message)
 
@@ -49,7 +49,8 @@ class DMRppOptions:
             with open(local_path, 'wb') as file:
                 file.write(response.content)
         except Exception as err:
-            logging.error(msg=str(err))
+            err_msg = f"called using {kwargs}, error : {err}"
+            logging.error(msg=str(err_msg))
             raise err
         pass
 
@@ -65,7 +66,8 @@ class DMRppOptions:
         try:
             self.s3_client.download_file(bucket_name, key, local_path)
         except Exception as err:
-            logging.error(msg=str(err))
+            err_msg = f"called using {kwargs}, error : {err}"
+            logging.error(msg=str(err_msg))
             raise err
         pass
 
@@ -112,6 +114,7 @@ if __name__ == '__main__':
 
     sn = DMRppOptions()
     print(sn.get_dmrpp_option(test_dict))
-    # sn.get_http_file(url='https://catalog.uah.edu/grad/colleges-departments/science/earth-system-science/earth-system-science.pdf', host_path='.')
+    # sn.get_http_file(url='https://catalog.uah.edu/grad/colleges-departments/science/earth-system-science/
+    # earth-system-science.pdf', host_path='.')
     # sn.get_s3_file(s3_link='s3://ghrcsbxw-public/aces1cont__1/aces1cont_2002.212_v2.50.tar.cmr.json', host_path='.')
     pass

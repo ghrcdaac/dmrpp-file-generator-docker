@@ -4,6 +4,9 @@ from unittest import TestCase
 from dmrpp_generator.main import DMRPPGenerator
 
 class TestDMRPPCommandLine(TestCase):
+    """
+    test DMRPP comand line
+    """
 
     dmrpp = DMRPPGenerator(input=[], config={})
     def test_1_local(self):
