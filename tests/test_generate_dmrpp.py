@@ -1,10 +1,13 @@
 import os
 from unittest import TestCase
+from unittest.mock import patch
 import json
 from dmrpp_generator.main import DMRPPGenerator
-from unittest.mock import patch
 
 class StorageValues:
+    """
+    storage values
+    """
     processing_output = None
 
 

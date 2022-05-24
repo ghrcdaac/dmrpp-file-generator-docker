@@ -114,6 +114,7 @@ if __name__ == '__main__':
 
     sn = DMRppOptions()
     print(sn.get_dmrpp_option(test_dict))
-    # sn.get_http_file(url='https://catalog.uah.edu/grad/colleges-departments/science/earth-system-science/earth-system-science.pdf', host_path='.')
+    # sn.get_http_file(url='https://catalog.uah.edu/grad/colleges-departments/science/earth-system-science/
+    # earth-system-science.pdf', host_path='.')
     # sn.get_s3_file(s3_link='s3://ghrcsbxw-public/aces1cont__1/aces1cont_2002.212_v2.50.tar.cmr.json', host_path='.')
     pass
