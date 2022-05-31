@@ -1,4 +1,4 @@
-FROM opendap/besd:3.20.9-91
+FROM opendap/besd:3.20.10-386
 RUN yum -y update && \
     yum -y upgrade
 RUN yum install -y centos-release-scl
