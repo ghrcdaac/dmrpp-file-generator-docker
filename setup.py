@@ -31,7 +31,10 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     entry_points={
-        'console_scripts': ['dmrpp-generator=dmrpp_generator.main:DMRPPGenerator.cli']
+        'console_scripts': [
+            'dmrpp-generator=dmrpp_generator.main:DMRPPGenerator.cli',
+            'generate-validate-dmrpp=dmrpp_generator.generate_and_validate_dmrpp:main'
+            ]
     },
     packages=find_packages(exclude=['docs', 'tests*']),
     include_package_data=True,

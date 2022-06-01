@@ -2,6 +2,14 @@
 ![Code Quality](https://api.codiga.io/project/33592/score/svg)
 ![Code Grade](https://api.codiga.io/project/33592/status/svg) <br>
 Code Quality [Dashboard](https://app.codiga.io/project/33592/dashboard)
+
+
+# How to install
+```
+$ pip install git+
+```
+
+
 ```
 
 # dmrpp-file-generator-docker

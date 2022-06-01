@@ -2,8 +2,8 @@
 import argparse
 import subprocess
 import time
+import os
 from multiprocessing import Process
-from os import walk
 import tempfile
 
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, separate_bar='-', length = 100, fill = '█', printEnd = "\r"):
@@ -28,6 +28,40 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     if iteration == total:
         print()
 
+def generate_docker_compose():
+    _ , dockercompose_file_location = tempfile.mkstemp(suffix=".yml")
+    with open(dockercompose_file_location, 'w') as dc:
+        dc.write(
+            """
+version: '3'
+services:
+  dmrpp:
+    # Path to dockerfile.
+    # '.' represents the current directory in which
+    # docker-compose.yml is present.
+    image: ghrcdaac/dmrpp-generator:v3.2.1.1
+    environment:
+      - PAYLOAD=${PAYLOAD}
+    # Mount volume
+    volumes:
+      - ${NC_FILES_PATH:-/tmp}:/usr/share/hyrax
+
+  hyrax:
+
+    # image to fetch from docker hub
+    image: opendap/hyrax:snapshot
+    ports:
+    - "${PORT:-8080}:8080"
+    volumes:
+      - ${NC_FILES_PATH:-/tmp}:/usr/share/hyrax/
+    working_dir: /usr/share/hyrax
+    container_name: hyrax
+
+            """
+        )
+    return dockercompose_file_location
+
+
 
 def progress_bar(file_number,prefix = 'Generating:', suffix = 'Complete',length = 50, fill = '█', separate_bar='-'):
     items = list(range(0, min(file_number * 25, 600)))
@@ -42,13 +76,16 @@ def progress_bar(file_number,prefix = 'Generating:', suffix = 'Complete',length 
 
 def run_docker_compose(payload,nc_hdf_path, port, dmrrpp_service, log_file_path):
 
+    dockercompose_file_location = generate_docker_compose()
     with open(log_file_path, "a") as output:
         try:
-            subprocess.call(f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} docker-compose up {dmrrpp_service}", shell=True, stdout=output,
+            subprocess.call(f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} docker-compose -f {dockercompose_file_location} up {dmrrpp_service}", shell=True, stdout=output,
                         stderr=output)
         except KeyboardInterrupt:
-            subprocess.call(f" docker-compose down {dmrrpp_service}", shell=True, stdout=output,
+            subprocess.call(f" docker-compose -f {dockercompose_file_location} down {dmrrpp_service}", shell=True, stdout=output,
                         stderr=output)
+            os.remove(dockercompose_file_location)
+            
 
 def main():
     parser = argparse.ArgumentParser(description='Generate and validate DMRPP files.')
@@ -70,7 +107,7 @@ def main():
     visit_link_path_message = f"{nc_hdf_path}" if no_need_validation else f"http://localhost:{port}/opendap (^C to kill the server)"
 
     # Counting number of files to estimate the work
-    _, _, files = next(walk(nc_hdf_path))
+    _, _, files = next(os.walk(nc_hdf_path))
     # Remove dmrpp suffix from the list of files
     [files.remove(file_) for file_ in files[:] if file_.endswith('.dmrpp')]
     _ , log_file_location = tempfile.mkstemp(prefix="dmrpp-generator-")
@@ -81,7 +118,7 @@ def main():
         p1.start()
         p2.start()
         p1.join()
-        print(f"To see the results visit:\t{visit_link_path_message}\nLogs are located here:\t{log_file_location}")
+        print(f"To see the results visit ( 🌎 ):\t{visit_link_path_message}\nLogs are located here (🪵 ):\t{log_file_location}")
         p2.join()
     except KeyboardInterrupt:
         print("Shutting down the server...")
