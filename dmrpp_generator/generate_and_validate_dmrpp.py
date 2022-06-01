@@ -79,10 +79,10 @@ def run_docker_compose(payload,nc_hdf_path, port, dmrrpp_service, log_file_path)
     dockercompose_file_location = generate_docker_compose()
     with open(log_file_path, "a") as output:
         try:
-            subprocess.call(f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} docker-compose -f {dockercompose_file_location} up {dmrrpp_service}", shell=True, stdout=output,
+            subprocess.call(f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} docker compose -f {dockercompose_file_location} up {dmrrpp_service}", shell=True, stdout=output,
                         stderr=output)
         except KeyboardInterrupt:
-            subprocess.call(f" docker-compose -f {dockercompose_file_location} down {dmrrpp_service}", shell=True, stdout=output,
+            subprocess.call(f" docker compose -f {dockercompose_file_location} down {dmrrpp_service}", shell=True, stdout=output,
                         stderr=output)
             os.remove(dockercompose_file_location)
             
@@ -111,14 +111,14 @@ def main():
     # Remove dmrpp suffix from the list of files
     [files.remove(file_) for file_ in files[:] if file_.endswith('.dmrpp')]
     _ , log_file_location = tempfile.mkstemp(prefix="dmrpp-generator-")
-
+    message_visit_server = "" if no_need_validation else f"To see the results visit ( 🌎 ):\t{visit_link_path_message}"
     try:
         p1 = Process(target=progress_bar, args=(len(files),))
         p2 = Process(target=run_docker_compose, args=(payload,nc_hdf_path, port, dmrrpp_service,log_file_location))
         p1.start()
         p2.start()
         p1.join()
-        print(f"To see the results visit ( 🌎 ):\t{visit_link_path_message}\nLogs are located here (🪵 ):\t{log_file_location}")
+        print(f"{message_visit_server}\nLogs are located here (🪵 ):\t{log_file_location}")
         p2.join()
     except KeyboardInterrupt:
         print("Shutting down the server...")
