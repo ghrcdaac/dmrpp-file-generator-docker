@@ -6,7 +6,13 @@ Code Quality [Dashboard](https://app.codiga.io/project/33592/dashboard)
 
 # How to install
 ```
-$ pip install git+
+$ pip install git+https://github.com/ghrcdaac/dmrpp-file-generator-docker.git@master#egg=dmrpp-file-generator
+```
+# TODO
+```
+- Create an ASSCII cinema to install the too
+- Change generate_and_validate_dmrpp to  generate-validate-dmrpp
+- Correct the ASSCII cinema to reflect the changes
 ```
 
 
