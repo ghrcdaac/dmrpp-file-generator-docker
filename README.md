@@ -118,10 +118,12 @@ PAYLOAD='{"dmrpp_regex": "^.*.nc4", "options":[{"flag": "-M"}, {"flag": "-s", "o
 ```
 `dmrpp_regex` is optional to override the DMRPP-Generator regex
 # Generate DMRpp files locally without Hyrax server
+`generate-validate-dmrpp` now uses docker compose v2.  Please update to  
+docker compose v2 or you will get the error  
+`/bin/sh: 1: docker compose: not found`
 ```
-$./generate_and_validate_dmrpp --help
-usage: generate_and_validate_dmrpp [-h] -p NC_HDF_PATH [-prt PORT]
-                                   [-pyld PAYLOAD] [-vldt VALIDATE]
+$generate-validate-dmrpp --help
+usage: generate-validate-dmrpp [-h] -p NC_HDF_PATH [-prt PORT] [-pyld PAYLOAD] [-vldt VALIDATE]
 
 Generate and validate DMRPP files.
 
@@ -134,36 +136,34 @@ optional arguments:
   -pyld PAYLOAD, --payload PAYLOAD
                         Payload to execute get_dmrpp binary
   -vldt VALIDATE, --validate VALIDATE
-                        Validate netCDF4 and HDF5 files against OPeNDAP local
-                        server
+                        Validate netCDF4 and HDF5 files against OPeNDAP local server
+
 ```
 
-The folder `<path/to/nc/hdf/files>` should contain netCDF and/or HDF files
+The folder `<absolute/path/to/nc/hdf/files>` should contain netCDF and/or HDF files
 ```code
-./generate_and_validate_dmrpp -p <path/to/nc/hdf/files> -vldt false
-Note: If you don't have python3 in /usr/bin/python run the command with your explicit python
-generate_and_validate_dmrpp -p <path/to/nc/hdf/files> -vldt false
+generate-validate-dmrpp -p <absolute/path/to/nc/hdf/files> -vldt false
 ```
-<a href="https://asciinema.org/a/cwS7DwtEBYcvVVaRzm77wBHuA" target="_blank"><img src="https://asciinema.org/a/cwS7DwtEBYcvVVaRzm77wBHuA.svg" /></a>
+<a href="https://asciinema.org/a/p6xzJQguUni26FIbjCxm8giWw" target="_blank"><img src="https://asciinema.org/a/p6xzJQguUni26FIbjCxm8giWw.svg" /></a>
 # Generate DMRpp files locally with Hyrax server (for validation)
 
 ```code
-./generate_and_validate_dmrpp -p <path/to/nc/hdf/files>
+generate-validate-dmrpp -p <absolute/path/to/nc/hdf/files>
 A prompt will ask you to visit localhost:8080
 # If you want to change the default port run the command with
-./generate_and_validate_dmrpp -p <path/to/nc/hdf/files> -prt 8889
+generate-validate-dmrpp -p <absolute/path/to/nc/hdf/files> -prt 8889
 Now you can validate the result in localhost:8889
 ```
 
-<a href="https://asciinema.org/a/6F2KsfWPt4FVdlRuTWHhilV7j" target="_blank"><img src="https://asciinema.org/a/6F2KsfWPt4FVdlRuTWHhilV7j.svg" /></a>
+<a href="https://asciinema.org/a/1NbdKMckp3ONLAuD1zbDkCFIw" target="_blank"><img src="https://asciinema.org/a/1NbdKMckp3ONLAuD1zbDkCFIw.svg" /></a>
 
 # Generate missing metadata for non-netcdf compliant data (the -b switch)
 ```code
-./generate_and_validate_dmrpp -p <path/to/nc/hdf/files> -pyld $PAYLOAD
+generate-validate-dmrpp -p <absolute/path/to/nc/hdf/files> -pyld $PAYLOAD
 ```
 or
 ```code
-docker run --rm -it --env-file ./env.list -v <path/to/nc/hdf/files>:/workstation ghrcdaac/dmrpp-generator
+docker run --rm -it --env-file ./env.list -v <absolute/path/to/nc/hdf/files>:/workstation ghrcdaac/dmrpp-generator
 ```
 where PAYLOAD contains your flags and switches
 ```code
