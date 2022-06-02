@@ -44,18 +44,15 @@ def run_docker_compose(payload,nc_hdf_path, port, dmrrpp_service, log_file_path)
 
     with open(log_file_path, "a+") as output:
         dkr_comp_version = 'docker-compose'
+        subprocess.call(f"{dkr_comp_version} --version", shell=True, stderr=output)
+        output.seek(0)
+        err_grab = output.readlines()[-1]
+        if err_grab == '/bin/sh: 1: docker-compose: not found\n':
+            dkr_comp_version = 'docker compose'
+
         try:
             subprocess.call(f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} up {dmrrpp_service}", shell=True, stdout=output,
                         stderr=output)
-
-            output.seek(0)
-            err_grab = output.readlines()[-1]
-
-            if err_grab == '/bin/sh: 1: docker-compose: not found\n':
-                dkr_comp_version = 'docker compose'
-                subprocess.call(
-                    f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} up {dmrrpp_service}",
-                    shell=True, stdout=output,stderr=output)
 
         except KeyboardInterrupt:
             subprocess.call(f" {dkr_comp_version} down {dmrrpp_service}", shell=True, stdout=output,
