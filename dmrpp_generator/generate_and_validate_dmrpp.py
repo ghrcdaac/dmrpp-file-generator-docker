@@ -94,7 +94,7 @@ def run_docker_compose(payload, nc_hdf_path, port, dmrrpp_service, log_file_path
     dockercompose_file_location = generate_docker_compose()
     dkr_comp_version = check_docker_version(log_file_path)
     cmd = f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} " \
-          f"-f {dockercompose_file_location} up {dmrrpp_service}""
+          f"-f {dockercompose_file_location} up {dmrrpp_service}"
     with open(log_file_path, "a", encoding='utf-8') as output:
         try:
             subprocess.call(
