@@ -79,50 +79,31 @@ def progress_bar(file_number, prefix='Generating:', suffix='Complete', length=50
 
 
 def check_docker_version(log_file_path):
-    with open(log_file_path, "a+") as output:
-        dkr_comp_version = run_docker_compose_v2
-        subprocess.call(f"docker compose version", shell=True, stdout=output, stderr=output)
+    with open(log_file_path, "a+", encoding='utf-8') as output:
+        dkr_comp_version = 'docker compose'
+        subprocess.call(f"{dkr_comp_version} version", shell=True, stdout=output, stderr=output)
         output.seek(0)
         err_grab = output.readlines()[-1]
-        if err_grab == f'/bin/sh: 1: docker compose: not found\n':
-            dkr_comp_version = run_docker_compose_v1
+        if err_grab == f'/bin/sh: 1: {dkr_comp_version}: not found\n':
+            dkr_comp_version = 'docker-compose'
     return dkr_comp_version
-
-
-def run_docker_compose_v1(payload, nc_hdf_path, port, dmrrpp_service, log_file_path, dockercompose_file_location):
-    with open(log_file_path, "a") as output:
-        try:
-            subprocess.call(
-                f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} docker-compose "
-                f"-f {dockercompose_file_location} up {dmrrpp_service}",
-                shell=True, stdout=output,
-                stderr=output)
-        except KeyboardInterrupt:
-            subprocess.call(f" docker-compose -f {dockercompose_file_location} down {dmrrpp_service}", shell=True,
-                            stdout=output,
-                            stderr=output)
-            os.remove(dockercompose_file_location)
-
-
-def run_docker_compose_v2(payload, nc_hdf_path, port, dmrrpp_service, log_file_path, dockercompose_file_location):
-    with open(log_file_path, "a") as output:
-        try:
-            subprocess.call(
-                f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} docker compose "
-                f"-f {dockercompose_file_location} up {dmrrpp_service}",
-                shell=True, stdout=output,
-                stderr=output)
-        except KeyboardInterrupt:
-            subprocess.call(f" docker compose -f {dockercompose_file_location} down {dmrrpp_service}", shell=True,
-                            stdout=output,
-                            stderr=output)
-            os.remove(dockercompose_file_location)
 
 
 def run_docker_compose(payload, nc_hdf_path, port, dmrrpp_service, log_file_path):
     dockercompose_file_location = generate_docker_compose()
     dkr_comp_version = check_docker_version(log_file_path)
-    dkr_comp_version(payload, nc_hdf_path, port, dmrrpp_service, log_file_path, dockercompose_file_location)
+    with open(log_file_path, "a", encoding='utf-8') as output:
+        try:
+            subprocess.call(
+                f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} "
+                f"-f {dockercompose_file_location} up {dmrrpp_service}",
+                shell=True, stdout=output,
+                stderr=output)
+        except KeyboardInterrupt:
+            subprocess.call(f" {dkr_comp_version} -f {dockercompose_file_location} down {dmrrpp_service}", shell=True,
+                            stdout=output,
+                            stderr=output)
+            os.remove(dockercompose_file_location)
 
 
 def main():
