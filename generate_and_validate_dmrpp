@@ -44,7 +44,7 @@ def run_docker_compose(payload,nc_hdf_path, port, dmrrpp_service, log_file_path)
 
     with open(log_file_path, "a+") as output:
         dkr_comp_version = 'docker-compose'
-        subprocess.call(f"{dkr_comp_version} --version", shell=True, stderr=output)
+        subprocess.call(f"{dkr_comp_version} --version", shell=True, stdout=output, stderr=output)
         output.seek(0)
         err_grab = output.readlines()[-1]
         if err_grab == '/bin/sh: 1: docker-compose: not found\n':
