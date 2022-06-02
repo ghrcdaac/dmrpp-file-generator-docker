@@ -57,11 +57,12 @@ def check_docker_version(log_file_path):
 
 def run_docker_compose(payload, nc_hdf_path, port, dmrrpp_service, log_file_path):
     dkr_comp_version = check_docker_version(log_file_path)
+    cmd = f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} up {dmrrpp_service}"
     with open(log_file_path, "a") as output:
         try:
             subprocess.call(
-                f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} up {dmrrpp_service}",
-                shell=True, stdout=output,
+                cmd,
+                shell=output, stdout=output,
                 stderr=output)
 
         except KeyboardInterrupt:
