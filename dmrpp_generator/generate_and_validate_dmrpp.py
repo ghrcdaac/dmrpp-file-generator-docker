@@ -24,8 +24,8 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, separ
     """
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int(length * iteration // total)
-    bar = fill * filled_length + separate_bar * (length - filled_length)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=print_end)
+    f_bar = fill * filled_length + separate_bar * (length - filled_length)
+    print(f'\r{prefix} |{f_bar}| {percent}% {suffix}', end=print_end)
     # Print New Line on Complete
     if iteration == total:
         print()
