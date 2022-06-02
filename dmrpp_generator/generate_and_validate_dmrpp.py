@@ -7,8 +7,8 @@ from multiprocessing import Process
 import tempfile
 
 
-def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, separate_bar='-', length=100, fill='█',
-                     printEnd="\r"):
+def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, separate_bar='-', length=100, fill='█',
+                       print_end="\r"):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -23,9 +23,9 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, separat
         printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + separate_bar * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
+    filled_length = int(length * iteration // total)
+    bar = fill * filled_length + separate_bar * (length - filled_length)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=print_end)
     # Print New Line on Complete
     if iteration == total:
         print()
@@ -69,13 +69,13 @@ def progress_bar(file_number, prefix='Generating:', suffix='Complete', length=50
     items = list(range(0, min(file_number * 25, 600)))
     l = len(items)
     # Initial call to print 0% progress
-    printProgressBar(iteration=0, total=l, prefix=prefix, suffix=suffix, length=length, fill=fill,
-                     separate_bar=separate_bar)
+    print_progress_bar(iteration=0, total=l, prefix=prefix, suffix=suffix, length=length, fill=fill,
+                       separate_bar=separate_bar)
     for i, _ in enumerate(items):
         time.sleep(0.1)
         # Update Progress Bar
-        printProgressBar(iteration=i + 1, total=l, prefix=prefix, suffix=suffix, length=length, fill=fill,
-                         separate_bar=separate_bar)
+        print_progress_bar(iteration=i + 1, total=l, prefix=prefix, suffix=suffix, length=length, fill=fill,
+                           separate_bar=separate_bar)
 
 
 def check_docker_version(log_file_path):
@@ -132,18 +132,18 @@ def main():
     _, log_file_location = tempfile.mkstemp(prefix="dmrpp-generator-")
     message_visit_server = "" if no_need_validation else f"To see the results visit ( 🌎 ):\t{visit_link_path_message}"
     try:
-        p1 = Process(target=progress_bar, args=(len(files),))
-        p2 = Process(target=run_docker_compose, args=(payload, nc_hdf_path, port, dmrrpp_service, log_file_location))
-        p1.start()
-        p2.start()
-        p1.join()
+        p_1 = Process(target=progress_bar, args=(len(files),))
+        p_2 = Process(target=run_docker_compose, args=(payload, nc_hdf_path, port, dmrrpp_service, log_file_location))
+        p_1.start()
+        p_2.start()
+        p_1.join()
         print(f"{message_visit_server}\nLogs are located here (🪵 ):\t{log_file_location}")
-        p2.join()
+        p_2.join()
     except KeyboardInterrupt:
         print("Shutting down the server...")
-        p1 = Process(target=progress_bar, args=(3, "Progress", 'Complete', 10, '💀', '🔥',))
-        p1.start()
-        p1.join()
+        p_1 = Process(target=progress_bar, args=(3, "Progress", 'Complete', 10, '💀', '🔥',))
+        p_1.start()
+        p_1.join()
 
 
 if __name__ == "__main__":
