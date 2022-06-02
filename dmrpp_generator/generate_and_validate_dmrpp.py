@@ -82,7 +82,7 @@ def check_docker_version(log_file_path):
     with open(log_file_path, "a+", encoding='utf-8') as output:
         dkr_comp_version = 'docker compose'
         cmd = f"{dkr_comp_version} version"
-        subprocess.call(cmd, shell=True, stdout=output, stderr=output)
+        subprocess.run(cmd, shell=True, check=False, stdout=output, stderr=output)
         output.seek(0)
         err_grab = output.readlines()[-1]
         if err_grab == f'/bin/sh: 1: {dkr_comp_version}: not found\n':
@@ -98,13 +98,13 @@ def run_docker_compose(payload, nc_hdf_path, port, dmrrpp_service, log_file_path
         try:
             cmd = f"PAYLOAD='{payload}' NC_FILES_PATH={nc_hdf_path} PORT={port} {dkr_comp_version} " \
                     f"-f {dockercompose_file_location} up {dmrrpp_service}"
-            subprocess.call(
+            subprocess.run(
                 cmd,
-                shell=True, stdout=output,
+                shell=True, check=False, stdout=output,
                 stderr=output)
         except KeyboardInterrupt:
             cmd = f" {dkr_comp_version} -f {dockercompose_file_location} down {dmrrpp_service}"
-            subprocess.call(cmd, shell=True,
+            subprocess.run(cmd, shell=True, check=False,
                             stdout=output,
                             stderr=output)
             os.remove(dockercompose_file_location)
