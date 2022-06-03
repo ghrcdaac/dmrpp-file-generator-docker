@@ -1,7 +1,7 @@
+from os import path
 from importlib import import_module
 from setuptools import setup, find_packages
-from os import path
-from codecs import open
+from codecs import open as codopen
 
 here = path.abspath(path.dirname(__file__))
 
@@ -10,7 +10,7 @@ __version__ = import_module('dmrpp_generator.version').__version__
 
 # get dependencies
 
-with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+with codopen(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     all_reqs = f.read().split('\n')
 install_requires = [x.strip() for x in all_reqs]
 
