@@ -33,8 +33,8 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, separ
 
 def generate_docker_compose():
     _, dockercompose_file_location = tempfile.mkstemp(suffix=".yml")
-    with open(dockercompose_file_location, 'w') as dc:
-        dc.write(
+    with open(dockercompose_file_location,'w', encoding="utf-8") as dockercompose_file:
+        dockercompose_file.write(
             """
 version: '3'
 services:
@@ -67,14 +67,14 @@ services:
 
 def progress_bar(file_number, prefix='Generating:', suffix='Complete', length=50, fill='█', separate_bar='-'):
     items = list(range(0, min(file_number * 25, 600)))
-    l = len(items)
+    items_length = len(items)
     # Initial call to print 0% progress
-    print_progress_bar(iteration=0, total=l, prefix=prefix, suffix=suffix, length=length, fill=fill,
+    print_progress_bar(iteration=0, total=items_length, prefix=prefix, suffix=suffix, length=length, fill=fill,
                        separate_bar=separate_bar)
     for i, _ in enumerate(items):
         time.sleep(0.1)
         # Update Progress Bar
-        print_progress_bar(iteration=i + 1, total=l, prefix=prefix, suffix=suffix, length=length, fill=fill,
+        print_progress_bar(iteration=i + 1, total=items_length, prefix=prefix, suffix=suffix, length=length, fill=fill,
                            separate_bar=separate_bar)
 
 
@@ -134,7 +134,7 @@ def main():
     # Remove dmrpp suffix from the list of files
     [files.remove(file_) for file_ in files[:] if file_.endswith('.dmrpp')]
     _, log_file_location = tempfile.mkstemp(prefix="dmrpp-generator-")
-    message_visit_server = "" if no_need_validation else f"To see the results visit ( 🌎 ):\t{visit_link_path_message}"
+    message_visit_server = "" if no_need_validation else f"Results served ( 🌎 ):\t{visit_link_path_message}"
     try:
         p_1 = Process(target=progress_bar, args=(len(files),))
         p_2 = Process(target=run_docker_compose, args=(payload, nc_hdf_path, port, dmrrpp_service, log_file_location))
