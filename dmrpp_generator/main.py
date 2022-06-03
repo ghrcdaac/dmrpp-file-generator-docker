@@ -174,7 +174,8 @@ class DMRPPGenerator(Process):
             file_name = input_file if local else s3.download(input_file, path=self.path)
             cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
             cmd_output = self.run_command(cmd)
-            logger.error(f"{self.dmrpp_version}: command {cmd} returned {cmd_output.stderr}") if cmd_output.stderr else ""
+            if cmd_output.stderr and "OPeNDAP_DMRpp_DATA_ACCESS_URL" not in str(cmd_output.stderr):
+                logger.error(f"{self.dmrpp_version}: command {cmd} returned {cmd_output.stderr}")
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
