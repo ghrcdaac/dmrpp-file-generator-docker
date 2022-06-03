@@ -9,8 +9,6 @@ Code Quality [Dashboard](https://app.codiga.io/project/33592/dashboard)
 $ pip install git+https://github.com/ghrcdaac/dmrpp-file-generator-docker.git@master#egg=dmrpp-file-generator
 ```
 
-```
-
 # dmrpp-file-generator-docker
 Docker image to generate dmrpp files from netCDF and HDF files
 # Supported get_dmrpp configuration
