@@ -2,7 +2,6 @@ FROM opendap/besd:3.20.13-184
 RUN yum -y update && \
     yum -y upgrade
 HEALTHCHECK NONE
-RUN yum install -y centos-release-scl
 # Adding a user
 RUN adduser worker
 RUN yum install -y nano && \
