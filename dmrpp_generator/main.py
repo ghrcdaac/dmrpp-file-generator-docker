@@ -8,7 +8,7 @@ from cumulus_logger import CumulusLogger
 from .version import __version__
 from .dmrpp_options import DMRppOptions
 
-LOGGER_TO_CW =  CumulusLogger(name="DMRPP-Generator")
+LOGGER_TO_CW = CumulusLogger(name="DMRPP-Generator")
 
 
 class CmdStd:
@@ -17,6 +17,7 @@ class CmdStd:
     """
     stdout = ""
     stderr = ""
+
 
 class DMRPPGenerator(Process):
     """
@@ -33,7 +34,9 @@ class DMRPPGenerator(Process):
             **config.get('dmrpp', {}),  # from workflow
             **config.get('collection', {}).get('meta', {}).get('dmrpp', {}),  # from collection
         }
-        self.processing_regex = self.dmrpp_meta.get('dmrpp_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?')
+        self.processing_regex = self.dmrpp_meta.get(
+            'dmrpp_regex', '.*\\.(((?i:(h|hdf)))(e)?5|nc(4)?)(\\.bz2|\\.gz|\\.Z)?'
+        )
 
         super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
@@ -91,7 +94,6 @@ class DMRPPGenerator(Process):
 
         return None
 
-
     def process(self):
         """
         Override the processing wrapper
@@ -125,6 +127,15 @@ class DMRPPGenerator(Process):
                         }
                         dmrpp_files.append(dmrpp_file)
                         self.upload_file_to_s3(output_file_path, f's3://{dmrpp_file["bucket"]}/{dmrpp_file["key"]}')
+
+            # Remove old dmrpp files if they exist before adding new ones
+            i = 0
+            while i < len(granule['files']):
+                temp = granule['files'][i]
+                if str(temp.get('fileName')).endswith('dmrpp'):
+                    granule['files'].pop(i)
+                else:
+                    i += 1
 
             granule['files'] += dmrpp_files
 
@@ -188,6 +199,6 @@ class DMRPPGenerator(Process):
 
 
 if __name__ == "__main__":
-    dmr = DMRPPGenerator(input = [], config = {})
+    dmr = DMRPPGenerator(input=[], config={})
     meta = {"options": [{"flag": "-s", "opt": "htp://localhost/config.conf", "download": "true"}, {"flag": "-M"}]}
     dmr.get_dmrpp_command(meta, dmr.path, "file_name.nc")
