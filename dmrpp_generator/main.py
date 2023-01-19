@@ -41,7 +41,8 @@ class DMRPPGenerator(Process):
         super().__init__(**kwargs)
         self.path = self.path.rstrip('/') + "/"
         # Enable logging the default is True
-        enable_logging = os.getenv('ENABLE_CW_LOGGING', 'True') in [True, "true", "t", 1]
+        # enable_logging = os.getenv('ENABLE_CW_LOGGING', 'True') in [True, "true", "t", 1]
+        enable_logging = True
         self.dmrpp_version = f"DMRPP {__version__}"
         self.logger_to_cw = LOGGER_TO_CW if enable_logging else logging
 
@@ -99,12 +100,15 @@ class DMRPPGenerator(Process):
         Override the processing wrapper
         :return:
         """
+        self.logger_to_cw.info('Starting DMRPP processing...')
         collection = self.config.get('collection')
         collection_files = collection.get('files', [])
         buckets = self.config.get('buckets')
         granules = self.input['granules']
+        self.logger_to_cw.info(f'Processing granules: {granules}')
         for granule in granules:
             dmrpp_files = []
+            self.logger_to_cw.info(f'Processing files: {granule["files"]}')
             for file_ in granule['files']:
                 if not search(f"{self.processing_regex}$", file_['fileName']):
                     self.logger_to_cw.debug(f"{self.dmrpp_version}: regex {self.processing_regex}"
@@ -126,8 +130,11 @@ class DMRPPGenerator(Process):
                             "type": self.get_file_type(output_file_basename, collection_files),
                         }
                         dmrpp_files.append(dmrpp_file)
+                        self.logger_to_cw.info(f'Uploading output file {dmrpp_file["key"]} to S3...')
                         self.upload_file_to_s3(output_file_path, f's3://{dmrpp_file["bucket"]}/{dmrpp_file["key"]}')
 
+            self.logger_to_cw.info(f'dmrpp_files: {dmr}')
+            self.logger_to_cw.info('Removing old DMRPP files...')
             # Remove old dmrpp files if they exist before adding new ones
             i = 0
             while i < len(granule['files']):
@@ -139,6 +146,7 @@ class DMRPPGenerator(Process):
 
             granule['files'] += dmrpp_files
 
+        self.logger_to_cw.info('Returning input...')
         return self.input
 
     def get_dmrpp_command(self, dmrpp_meta, input_path, output_filename, local=False):
@@ -179,12 +187,17 @@ class DMRPPGenerator(Process):
         # Force dmrpp_meta to be an object
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         # If not running locally use Cumulus logger
-        logger = logging if local else LOGGER_TO_CW
+        logger = logging if local else self.logger_to_cw
         cmd_output = CmdStd()
         try:
+            self.logger_to_cw.info('Downloading input files from S3...')
             file_name = input_file if local else s3.download(input_file, path=self.path)
+            self.logger_to_cw.info('Getting DMRPP command...')
             cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
+            logger.info(f'dmrpp cmd: {cmd}')
+            self.logger_to_cw.info('Running DMRPP command...')
             cmd_output = self.run_command(cmd)
+            logger.info(f'cmd_output: {cmd_output}')
             if cmd_output.stderr and "OPeNDAP_DMRpp_DATA_ACCESS_URL" not in str(cmd_output.stderr):
                 logger.error(f"{self.dmrpp_version}: command {cmd} returned {cmd_output.stderr}")
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
