@@ -85,7 +85,7 @@ class DMRPPGenerator(Process):
     def upload_file_to_s3(self, filename, uri):
         """ Upload a local file to s3 if collection payload provided """
         try:
-            return s3.upload(filename, uri, extra={})
+            return s3.upload(filename, uri, extra={"ACL": "bucket-owner-full-control"})
         except ClientError as cle:
             self.logger_to_cw.error(f"{self.dmrpp_version}: {cle}")
         except Exception as err:  # pylint: disable=broad-except
