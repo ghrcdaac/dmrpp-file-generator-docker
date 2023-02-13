@@ -84,15 +84,7 @@ class DMRPPGenerator(Process):
 
     def upload_file_to_s3(self, filename, uri):
         """ Upload a local file to s3 if collection payload provided """
-        try:
-            return s3.upload(filename, uri, extra={})
-        except ClientError as cle:
-            self.logger_to_cw.error(f"{self.dmrpp_version}: {cle}")
-        except Exception as err:  # pylint: disable=broad-except
-            self.logger_to_cw.error(f"{self.dmrpp_version}: "
-                                    f"Error uploading file {os.path.basename(os.path.basename(filename))}: {err}")
-
-        return None
+        return s3.upload(filename, uri, extra={})
 
     def process(self):
         """
@@ -185,8 +177,8 @@ class DMRPPGenerator(Process):
             file_name = input_file if local else s3.download(input_file, path=self.path)
             cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
             cmd_output = self.run_command(cmd)
-            if cmd_output.stderr and "OPeNDAP_DMRpp_DATA_ACCESS_URL" not in str(cmd_output.stderr):
-                logger.error(f"{self.dmrpp_version}: command {cmd} returned {cmd_output.stderr}")
+            cmd_output.check_returncode()
+
             out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
             return out_files
 
