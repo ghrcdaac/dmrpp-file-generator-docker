@@ -170,24 +170,13 @@ class DMRPPGenerator(Process):
         """
         # Force dmrpp_meta to be an object
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
-        # If not running locally use Cumulus logger
-        logger = logging if local else LOGGER_TO_CW
-        cmd_output = CmdStd()
-        try:
-            file_name = input_file if local else s3.download(input_file, path=self.path)
-            cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
-            cmd_output = self.run_command(cmd)
-            cmd_output.check_returncode()
+        file_name = input_file if local else s3.download(input_file, path=self.path)
+        cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
+        cmd_output = self.run_command(cmd)
+        cmd_output.check_returncode()
 
-            out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
-            return out_files
-
-        except subprocess.CalledProcessError as sub_e:
-            logger.error(f"error {sub_e}")
-            return []
-        except Exception as ex:  # pylint: disable=broad-except
-            logger.error(f"{self.dmrpp_version}: error {ex}: {cmd_output.stdout} {cmd_output.stderr}")
-            return []
+        out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
+        return out_files
 
 
 if __name__ == "__main__":
