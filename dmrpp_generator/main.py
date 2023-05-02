@@ -44,7 +44,7 @@ class DMRPPGenerator(Process):
         self.logger_to_cw = LOGGER_TO_CW if enable_logging else logging
         self.logger_to_cw.info(f'config: {self.config}')
         self.timeout = int(self.dmrpp_meta.get(
-            'get_dmrpp_timeout', os.getenv('GET_DMRPP_TIMEOUT', 60))
+            'get_dmrpp_timeout', os.getenv('GET_DMRPP_TIMEOUT', '60'))
         )
         self.logger_to_cw.info(f'get_dmrpp_timeout: {self.timeout}')
 
