@@ -2,7 +2,6 @@ import logging
 import os
 from re import search
 import subprocess
-from botocore.exceptions import ClientError
 from cumulus_process import Process, s3
 from cumulus_logger import CumulusLogger
 from .version import __version__
@@ -28,7 +27,6 @@ class DMRPPGenerator(Process):
 
     def __init__(self, **kwargs):
         config = kwargs.get('config', {})
-
         # any keys on collection config override keys from workflow config
         self.dmrpp_meta = {
             **config.get('dmrpp', {}),  # from workflow
@@ -44,6 +42,11 @@ class DMRPPGenerator(Process):
         enable_logging = os.getenv('ENABLE_CW_LOGGING', 'True') in [True, "true", "t", 1]
         self.dmrpp_version = f"DMRPP {__version__}"
         self.logger_to_cw = LOGGER_TO_CW if enable_logging else logging
+        self.logger_to_cw.info(f'config: {self.config}')
+        self.timeout = int(self.dmrpp_meta.get(
+            'get_dmrpp_timeout', os.getenv('GET_DMRPP_TIMEOUT', '60'))
+        )
+        self.logger_to_cw.info(f'get_dmrpp_timeout: {self.timeout}')
 
     @property
     def input_keys(self):
@@ -158,10 +161,10 @@ class DMRPPGenerator(Process):
             return [file_name]
         return []
 
-    @staticmethod
-    def run_command(cmd):
+    def run_command(self, cmd):
         """ Run cmd as a system command """
-        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             check=True, timeout=self.timeout)
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):
@@ -172,9 +175,7 @@ class DMRPPGenerator(Process):
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         file_name = input_file if local else s3.download(input_file, path=self.path)
         cmd = self.get_dmrpp_command(dmrpp_meta, self.path, file_name, local)
-        cmd_output = self.run_command(cmd)
-        cmd_output.check_returncode()
-
+        self.run_command(cmd)
         out_files = [f"{file_name}.dmrpp"] + self.add_missing_files(dmrpp_meta, f'{file_name}.dmrpp.missing')
         return out_files
 
