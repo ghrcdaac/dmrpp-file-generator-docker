@@ -46,6 +46,10 @@ class DMRPPGenerator(Process):
         self.timeout = int(self.dmrpp_meta.get(
             'get_dmrpp_timeout', os.getenv('GET_DMRPP_TIMEOUT', '60'))
         )
+        self.enable_subprocess_logging = self.dmrpp_meta.get(
+            'enable_subprocess_logging', os.getenv('ENABLE_SUBPROCESS_LOGGING', False)
+        )
+
         self.logger_to_cw.info(f'get_dmrpp_timeout: {self.timeout}')
 
     @property
@@ -163,8 +167,15 @@ class DMRPPGenerator(Process):
 
     def run_command(self, cmd):
         """ Run cmd as a system command """
-        out = subprocess.run(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             check=True, timeout=self.timeout)
+        stdout = None
+        stderr = None
+
+        if self.enable_subprocess_logging:
+            stdout = subprocess.PIPE
+            stderr = subprocess.STDOUT
+
+        out = subprocess.run(cmd.split(), stdout=stdout, stderr=stderr, timeout=self.timeout, check=True)
+
         return out
 
     def dmrpp_generate(self, input_file, local=False, dmrpp_meta=None):
