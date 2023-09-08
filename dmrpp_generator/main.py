@@ -147,7 +147,7 @@ class DMRPPGenerator(Process):
         dmrpp_meta = dmrpp_meta if isinstance(dmrpp_meta, dict) else {}
         dmrpp_options = DMRppOptions(self.path)
         options = dmrpp_options.get_dmrpp_option(dmrpp_meta=dmrpp_meta)
-        local_option = f"-u file://{output_filename}" if local else ""
+        local_option = f"-u file://{output_filename}" if '-u' in options else ''
         dmrpp_cmd = f"get_dmrpp {options} {input_path} -o {output_filename}.dmrpp" \
                     f" {local_option} {os.path.basename(output_filename)}"
         return " ".join(dmrpp_cmd.split())
@@ -174,7 +174,11 @@ class DMRPPGenerator(Process):
             stdout = subprocess.PIPE
             stderr = subprocess.STDOUT
 
-        out = subprocess.run(cmd.split(), stdout=stdout, stderr=stderr, timeout=self.timeout, check=True)
+        try:
+            out = subprocess.run(cmd.split(), stdout=stdout, stderr=stderr, timeout=self.timeout, check=True)
+        except Exception as e:
+            self.logger_to_cw.info(f'cmd: {cmd}')
+            raise Exception(f'get_dmrpp failed. \ncmd: {cmd} \nException: {e}')
 
         return out
 
