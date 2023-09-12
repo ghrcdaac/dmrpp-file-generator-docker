@@ -42,7 +42,7 @@ services:
     # Path to dockerfile.
     # '.' represents the current directory in which
     # docker-compose.yml is present.
-    image: ghrcdaac/dmrpp-generator:v3.4.0
+    image: ghrcdaac/dmrpp-generator:v4.1.1
     environment:
       - PAYLOAD=${PAYLOAD}
     # Mount volume
